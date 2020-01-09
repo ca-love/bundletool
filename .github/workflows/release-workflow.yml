@@ -1,0 +1,44 @@
+name: Create release tag and store artifacts
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Test
+        run: ./gradlew test
+      - name: Assemble
+        run: ./gradlew executableJar
+      - name: Set VersionName
+        id: vars
+        run: echo ::set-output name=VERSION_NAME::"$(cat gradle.properties | awk -F = '/^release_version.+/ {gsub(/[ ]/, ""); print $2}')-$(echo ${GITHUB_SHA} | cut -c1-8)"
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.vars.outputs.VERSION_NAME }}
+          release_name: ${{ steps.vars.outputs.VERSION_NAME }}
+          body: Create From ${GITHUB_REF}
+          draft: false
+          prerelase: false
+      - name: Upload assets
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/libs/bundletool-all.jar
+          asset_name: bundletool-all-${{ steps.vars.outputs.VERSION_NAME }}.jar
+          asset_content_type: application/java-archive

@@ -22,6 +22,9 @@ repositories {
     mavenLocal()
     jcenter()
     google()
+    maven {
+       url "https://storage.googleapis.com/r8-releases/raw"
+    }
 }
 
 configurations {
@@ -32,7 +35,7 @@ configurations {
 
 // The repackaging rules are defined in the "shadowJar" task below.
 dependencies {
-    compile "com.android.tools:r8:1.5.68"
+    compile "com.android.tools:r8:1.6.51"
     compile "com.android.tools.build:apkzlib:3.4.0-beta01"
     compile "com.android.tools.ddms:ddmlib:26.2.0"
 
